@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -std=c99
 
-memgrind.c: memgrind.o mymalloc.o
+memgrind: memgrind.o mymalloc.o
 	$(CC) $(CFLAGS) $^ -o memgrind
 
 mymalloc.o: mymalloc.c mymalloc.h
@@ -11,4 +11,4 @@ memgrind.o: memgrind.c mymalloc.h
 	$(CC) $(CFLAGS) -c -Wall memgrind.c
 
 clean:
-	rm *.o
+	rm *.o memgrind
