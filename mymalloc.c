@@ -57,5 +57,46 @@ void *mymalloc(size_t size, char *file, int line) {
 };
 
 
+void myfree(void *ptr, char *file, int line){
+    char *finder = heap;
+    char *prev = finder;
+    int currsize = * (int *) finder;
 
-void myfree(void *ptr, char *file, int line);
+    while ((void *) (finder+8) != ptr && finder < heap+4096) {
+        currsize = * (int *) finder;
+        prev = finder;
+        finder = finder+8+currsize;
+    }
+
+    if (finder >= heap+4096) {
+        printf("Error: Pointer used in free() in %s on line %d not created by malloc.\n", file, line);
+        exit(EXIT_FAILURE);
+    }
+
+    if (* (int *) (finder+4) == 0) {
+        printf("Error: Pointer used in free() in %s on line %d is not currently allocated.\n", file, line);
+        exit(EXIT_FAILURE);
+    }
+    
+    char *next = finder+8+currsize;
+    int prevFree = 0;
+    * (int *) (finder+4) = 0;
+    
+
+    if ( * (int *) (prev+4) == 0) {
+        prevFree = 1;
+        int newsize = currsize + (* (int *) prev) + 8; // need the additional 8 here to account for old current header
+        * (int *) prev = newsize;
+        * (int *) (finder) = 0;
+    }
+    
+    if ( * (int *) (next+4) == 0) {
+        if (prevFree == 1) {
+            * (int *) prev = (* (int *) prev) + (* (int *) next) + 8;
+            * (int *) next = 0;
+        } else {
+            * (int *) finder = currsize + (* (int *) next) +8;
+            * (int *) next = 0;
+        }
+    }
+};
