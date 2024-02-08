@@ -4,6 +4,12 @@ CFLAGS = -Wall -std=c99
 memgrind: memgrind.o mymalloc.o
 	$(CC) $(CFLAGS) $^ -o memgrind
 
+memtest: memtest.o mymalloc.o
+	$(CC) $(CFLAGS) $^ -o memtest
+
+memtest.o: memtest.c mymalloc.h
+	$(CC) $(CFLAGS) -c -Wall memtest.c
+
 mymalloc.o: mymalloc.c mymalloc.h
 	$(CC) $(CFLAGS) -c -Wall mymalloc.c
 
