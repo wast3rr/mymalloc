@@ -46,7 +46,9 @@ void *mymalloc(size_t size, char *file, int line) {
   * (int *) finder = width;
   * (int *) (finder+4) = 1;
   void *ptr = (void *) (finder+8);
-  
+  //printf("Successfully allocated chunk with width %d based on requested %ld at %p.\n", width, size, finder+8);
+
+
   // Creates the next header for free chunk to the right of allocated payload, as long as there is free space and not another allocated chunk next to the space
   finder = finder+8+width;
   if (* (int *) (finder+4) == 0) {
@@ -58,45 +60,63 @@ void *mymalloc(size_t size, char *file, int line) {
 
 
 void myfree(void *ptr, char *file, int line){
-    char *finder = heap;
-    char *prev = finder;
-    int currsize = * (int *) finder;
+    char *finder = heap;                // This pointer points to the current header being checked/focused on
+    char *prev = finder;                  // This will point to the header before the header finder is pointing at 
+    int currsize = * (int *) finder;    // The size of the payload finder is currently at
+    
+    if ((char *) ptr >= heap+4096) {
+        printf("free error: address not obtained from malloc() (%s:%d)\n", file, line);
+        exit(EXIT_FAILURE);
+    }
 
+    // This loop will iterate until finder gets to a pointer that matches the provided void pointer,
+    // or when it is outside of the heap's memory range
     while ((void *) (finder+8) != ptr && finder < heap+4096) {
         currsize = * (int *) finder;
         prev = finder;
         finder = finder+8+currsize;
     }
 
+    currsize = * (int *) finder;
+    
+    // If the pointer isn't found by the previous loop before pointer gets out of range,
+    // we can assume that the pointer was not created by malloc 
     if (finder >= heap+4096) {
         printf("Error: Pointer used in free() in %s on line %d not created by malloc.\n", file, line);
         exit(EXIT_FAILURE);
     }
-
+    
+    // If the pointer has already been freed, then free fails
     if (* (int *) (finder+4) == 0) {
         printf("Error: Pointer used in free() in %s on line %d is not currently allocated.\n", file, line);
         exit(EXIT_FAILURE);
     }
-    
-    char *next = finder+8+currsize;
-    int prevFree = 0;
-    * (int *) (finder+4) = 0;
-    
 
-    if ( * (int *) (prev+4) == 0) {
+    char *next = finder+8+currsize; // points to the next header from finder
+    int prevFree = 0;               // tracks if header previous to finder is freed (1) or alocated (1)
+    * (int *) (finder+4) = 0;       // Sets finder's header to unallocated
+    //printf("Successfully freed chunk at %p, based on user request %p.\n", finder, ptr);
+
+    // If previous header is also unallocated, the previous and current payloads are coalesced
+    if ( * (int *) (prev+4) == 0 && prev != finder) {
         prevFree = 1;
         int newsize = currsize + (* (int *) prev) + 8; // need the additional 8 here to account for old current header
         * (int *) prev = newsize;
         * (int *) (finder) = 0;
+        //printf("Previous chunk coalesced at %p.\n", prev);
     }
     
+    // If the next header is also unallocated, coalesce
     if ( * (int *) (next+4) == 0) {
+        // If prev was also unallocateed, then all three are coalesced here
         if (prevFree == 1) {
             * (int *) prev = (* (int *) prev) + (* (int *) next) + 8;
             * (int *) next = 0;
+        // If prev was not unallocated, then the coalescing begins with finder (current header) instead
         } else {
             * (int *) finder = currsize + (* (int *) next) +8;
             * (int *) next = 0;
         }
+        //printf("Next chunk coalesced at %p.\n", next);
     }
 };
