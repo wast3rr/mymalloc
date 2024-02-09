@@ -16,7 +16,7 @@ void *mymalloc(size_t size, char *file, int line) {
    
    // If the user asks for more space than is in the memory heap, return error
   if (size > MEMLENGTH*8) {
-      printf("Not enough space in heap for malloc call in %s on line %d.\n", file, line);
+      printf("malloc error: not enough space in heap for desired byte amount (%s:%d)\n", file, line);
       return NULL;
   } 
     
@@ -38,7 +38,7 @@ void *mymalloc(size_t size, char *file, int line) {
   }
 
   if (finder >= (heap+4096)) {
-      printf("Not enough contiguous space available for malloc call in %s on line %d.\n", file, line);
+      printf("malloc error: not enough contiguous space in heap for byte amount (%s:%d)\n", file, line);
       return NULL;
   }
 
@@ -82,14 +82,14 @@ void myfree(void *ptr, char *file, int line){
     // If the pointer isn't found by the previous loop before pointer gets out of range,
     // we can assume that the pointer was not created by malloc 
     if (finder >= heap+4096) {
-        printf("Error: Pointer used in free() in %s on line %d not created by malloc.\n", file, line);
-        exit(EXIT_FAILURE);
+        printf("free error: pointer provided not at beginning of a block (%s:%d)\n", file, line);
+        return;
     }
     
     // If the pointer has already been freed, then free fails
     if (* (int *) (finder+4) == 0) {
-        printf("Error: Pointer used in free() in %s on line %d is not currently allocated.\n", file, line);
-        exit(EXIT_FAILURE);
+        printf("free error: double free call on pointer (%s:%d)\n", file, line);
+        return;
     }
 
     char *next = finder+8+currsize; // points to the next header from finder
