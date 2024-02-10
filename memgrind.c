@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
     struct timeval start, end;
     double totaltime = 0;
     
+    // first provided stress test: allocating and deallocating one byte 120 times 
     for (int i = 0; i < 50; i++) {
         gettimeofday(&start, 0);
 
@@ -25,7 +26,9 @@ int main(int argc, char **argv) {
     }
 
     printf("Avg time to allocate and immediately deallocate one byte chunk 120 times: %f ms\n", totaltime);
-
+    
+    // second provided stress test: putting 120 one-byte objects into an array and deallocating them
+    totaltime = 0;
     for (int i = 0; i < 50; i++) {
         gettimeofday(&start, 0);
          char **onebytes = malloc(120*sizeof(char *));
@@ -37,15 +40,15 @@ int main(int argc, char **argv) {
         for (int i = 0; i < 120; i++) {
             free(onebytes[i]);
         }
-
         free(onebytes);
+
         gettimeofday(&end, 0);
         totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
     }
     printf("Avg time to create and deallocate 120 one-byte chunks: %f ms\n", totaltime/50.0);
     
+    // third provided stress test: randomly allocated one-byte objects 120 times and freeing them
     totaltime = 0;
-    
     for (int i = 0; i < 50; i++) {
         gettimeofday(&start, 0);
            
