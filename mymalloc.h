@@ -1,4 +1,3 @@
-// Macros and function prototypes as defined in project instructions
 #ifndef _MYMALLOC_H
 #define _MYMALLOC_H
 

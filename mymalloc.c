@@ -66,7 +66,7 @@ void myfree(void *ptr, char *file, int line){
     
     if ((char *) ptr >= heap+4096) {
         printf("free error: address not obtained from malloc() (%s:%d)\n", file, line);
-        exit(EXIT_FAILURE);
+        return;
     }
 
     // This loop will iterate until finder gets to a pointer that matches the provided void pointer,

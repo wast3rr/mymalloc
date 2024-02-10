@@ -11,6 +11,20 @@
 int main(int argc, char **argv) {
     struct timeval start, end;
     double totaltime = 0;
+    
+    for (int i = 0; i < 50; i++) {
+        gettimeofday(&start, 0);
+
+        for (int j = 0; j < 120; j++) {
+            char *test = malloc(1);
+            free(test);
+        }
+
+        gettimeofday(&end, 0);
+        totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
+    }
+
+    printf("Avg time to allocate and immediately deallocate one byte chunk 120 times: %f ms\n", totaltime);
 
     for (int i = 0; i < 50; i++) {
         gettimeofday(&start, 0);
@@ -60,6 +74,6 @@ int main(int argc, char **argv) {
         gettimeofday(&end, 0);
         totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
     }
-    printf("Avg time to randomly allocate/deallocate a one-byte chunk for 120 allocations: %f ms\n", totaltime/50.0); 
-
+    printf("Avg time to randomly allocate/deallocate a one-byte chunk for 120 allocations: %f ms\n", totaltime/50.0);
 }
+
