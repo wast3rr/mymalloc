@@ -7,6 +7,9 @@ memgrind: memgrind.o mymalloc.o
 memtest: memtest.o mymalloc.o
 	$(CC) $(CFLAGS) $^ -o memtest
 
+errortest: errortest.o mymalloc.o
+	$(CC) $(CFlAGS) $^ -o errortest
+
 memtest.o: memtest.c mymalloc.h
 	$(CC) $(CFLAGS) -c -Wall memtest.c
 
@@ -17,4 +20,4 @@ memgrind.o: memgrind.c mymalloc.h
 	$(CC) $(CFLAGS) -c -Wall memgrind.c
 
 clean:
-	rm *.o memgrind
+	rm -f *.o memgrind memtest errortest
