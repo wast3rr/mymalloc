@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include "mymalloc.h"
 
 #define MEMLENGTH 512
@@ -20,18 +21,33 @@ static void setheader(char *ptr, int size, int alloc) {
 
 
 
+// detectinitialization() detects whether or not the heap has already been used for malloc()
+static bool detectinitialization() {
+    int *ptr = (int *) heap;
+
+    for (int i = 0; i < 1024; i++) {
+        if (ptr[i] != 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+
 // mymalloc() returns a void function pointer to the client's created payload or NULL if it fails
 void *mymalloc(size_t size, char *file, int line) {
     // this gets the closest multiple of 8 from size
     int alignedsize = (size+7) & -8;
-    
+     
     if (size > MEMLENGTH * 8 - HEADERLENGTH) {
         printf("malloc error: not enough space in heap for desired byte amount (%s:%d)\n", file, line);
         return NULL;
     } 
     
     // if the heap is uninitialized, create the first header
-    if (* (int *) heap == 0) {
+    if (* (int *) heap == 0 && !detectinitialization()) {
         setheader(heap, 4088, 0);
     }
    

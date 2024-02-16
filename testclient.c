@@ -48,10 +48,12 @@ int main(int argc, char **argv){
             break;
 
         // GENERAL CORRECTNESS TESTS (these should not throw errors unless stated otherwise)
-        // tests that malloc(0) causes no issues for a future malloc call
+        // tests that malloc(0) causes no issues for a future malloc/free call (should return a pointer to 0 bytes worth of space)
         case 6:
             p = malloc(0);
-            q = malloc(4088);
+            q = malloc(0);
+            free(q);
+            q = malloc(4080);
             break;
         // tests to make sure client data is never corrupted even after malloc and free errors
         // should print two errors and "1, 2" if successful
@@ -82,6 +84,11 @@ int main(int argc, char **argv){
             k = malloc(4040);
             free(q);
             q = malloc(16);
+            break;
+        // checks what happens if user inputs a negative number (this should throw an error I think)
+        case 10:
+            p = malloc(-1);
+            free(p);
             break;
     } 
 
