@@ -34,8 +34,8 @@ int main(int argc, char **argv){
             break;
         // pointer not at beginning of block free error
         case 3:
-            p = malloc(25);
-            free(p+5);
+            k = malloc(25);
+            free(k+5);
             break;
         // not enough contiguous space malloc error
         case 4:
@@ -48,16 +48,9 @@ int main(int argc, char **argv){
             break;
 
         // GENERAL CORRECTNESS TESTS (these should not throw errors unless stated otherwise)
-        // tests that malloc(0) causes no issues for a future malloc/free call (should return a pointer to 0 bytes worth of space)
-        case 6:
-            p = malloc(0);
-            q = malloc(0);
-            free(q);
-            q = malloc(4080);
-            break;
-        // tests to make sure client data is never corrupted even after malloc and free errors
-        // should print two errors and "1, 2" if successful
-        case 7: 
+        // tests that cliet data is never corrupted, even when malloc/free fails
+        // should print TWO ERRORS and 1, 2 if successful
+        case 6: 
             p = malloc(8);
             p[0] = 1;
             p[1] = 2;
@@ -71,25 +64,36 @@ int main(int argc, char **argv){
 
             printf("%d, %d\n", p[0], p[1]);
             break;
-        // tests the detectleaks() method
-        case 8:
+        // basic malloc/free test
+        case 7:
             p = malloc(1);
             q = malloc(1);
-            detectleaks();
+            free(p);
+            free(q);
             break;
         // checks that if you free a block, you can allocate something there even if there are allocated blocks to the left and right
-        case 9:
+        case 8:
             p = malloc(1);
             q = malloc(16);
             k = malloc(4040);
             free(q);
             q = malloc(16);
             break;
+
+        // EDGE CASES
         // checks what happens if user inputs a negative number (this should throw an error I think)
-        case 10:
+        case 9:
             p = malloc(-1);
             free(p);
             break;
+        // tests that malloc(0) causes no issues for a future malloc/free call (should return a pointer to 0 bytes worth of space)
+        case 10:
+            p = malloc(0);
+            q = malloc(0);
+            free(q);
+            q = malloc(4080);
+            break;
+
     } 
 
     return EXIT_SUCCESS;

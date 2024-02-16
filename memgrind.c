@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
                     k = malloc(1000);
                     p = malloc(1000);
                     break;
-                case 2:
+                default:
                     k = malloc(1000);
                     p = malloc(1000);
                     q = malloc(1000);
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     }
     printf("Avg time to randomly allocate three pointers then deallocate them 120 times:\n%f ms\n", totaltime/50.0);
    
-    detectleaks();
+
     return EXIT_SUCCESS;
 }
 

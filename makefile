@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -std=c99 
+CFLAGS = -Wall -Werror -std=c99 -O
 
 memgrind: memgrind.o mymalloc.o
 	$(CC) $(CFLAGS) $^ -o memgrind

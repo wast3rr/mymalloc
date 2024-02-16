@@ -10,6 +10,11 @@ static double memory[MEMLENGTH];
 #define heap ((char *) memory)
 #define HEADERLENGTH 8
 
+#ifndef DEBUG
+#define DEBUG 0
+#else
+#define DEBUG 1
+#endif
 
 
 // setheader() sets the header at ptr to the chosen size and allocation status
@@ -32,6 +37,22 @@ static bool detectinitialization() {
     }
 
     return false;
+}
+
+
+
+// blackbox testing which prints the whole structure of the current heap if debug is defined
+static void printheapstruct() {
+    char *currptr = heap;
+    int *currheader = (int *) currptr;
+    int i = 0;
+
+    while (currptr < heap+4096) {
+        printf("Block %d, size: %d, status: %s\n", i, currheader[0], currheader[1] == 1? "allocated" : "unallocated");
+        i++;
+        currptr = currptr + currheader[0] + HEADERLENGTH;
+        currheader = (int *) currptr;
+    }
 }
 
 
@@ -82,9 +103,13 @@ void *mymalloc(size_t size, char *file, int line) {
     if (currheader[1] == 0) {
         currheader[0] = currsize - HEADERLENGTH - alignedsize;
     }
+    
+    if (DEBUG) { 
+        printheapstruct();
+    }
 
     return ptr;
-};
+}
 
 
 
@@ -153,30 +178,8 @@ void myfree(void *ptr, char *file, int line){
             nextheader[0] = 0;
         }
     }
-};
 
-
-
-// detectleaks() can be called by the client at program end to detect any chunks still allocated
-void detectleaks() {
-    char *currptr = heap;
-    int *currheader = (int *) currptr;
-    int currsize = currheader[0];
-
-    if (currheader[0] != 4088) {
-        printf("WARNING: The following memory chunks are still allocated:\n");
-    } else {
-        return;
+    if (DEBUG) {
+        printheapstruct();
     }
-
-    while (currptr < heap+4096) {
-        currsize = currheader[0];
-
-        if (currheader[1] == 1) {
-            printf("Address: %p, Size: %d\n", currptr, currsize);
-        }
-
-        currptr = currptr + currsize + HEADERLENGTH;
-        currheader = (int *) currptr;
-    }
-};
+}
