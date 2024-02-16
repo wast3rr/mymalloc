@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
         totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
     }
 
-    printf("Avg time to allocate and immediately deallocate one byte chunk 120 times: %f ms\n", totaltime);
+    printf("Avg time to allocate and immediately deallocate one byte chunk 120 times:\t\t%f ms\n", totaltime);
     
     // second provided stress test: putting 120 one-byte objects into an array and deallocating them
     totaltime = 0;
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
         gettimeofday(&end, 0);
         totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
     }
-    printf("Avg time to create and deallocate 120 one-byte chunks: %f ms\n", totaltime/50.0);
+    printf("Avg time to create and deallocate 120 one-byte chunks:\t\t\t\t\t%f ms\n", totaltime/50.0);
     
     // third provided stress test: randomly allocated one-byte objects 120 times and freeing them
     totaltime = 0;
@@ -77,8 +77,30 @@ int main(int argc, char **argv) {
         gettimeofday(&end, 0);
         totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
     }
-    printf("Avg time to randomly allocate/deallocate a one-byte chunk for 120 allocations: %f ms\n", totaltime/50.0);
-   
+    printf("Avg time to randomly allocate/deallocate a one-byte chunk for 120 allocations:\t\t%f ms\n", totaltime/50.0);
+
+    // fourth stress test: allocate 1000 bytes to three pointers and deallocate them 120 times
+    totaltime = 0;
+    for (int i = 0; i < 50; i++) {
+        gettimeofday(&start, 0);
+        char *p;
+        char *q;
+        char *k;
+
+        for (int j = 0; j < 120; j++) {
+            p = malloc(1000);
+            q = malloc(1000);
+            k = malloc(1000);
+            free(p);
+            free(q);
+            free(k);
+        }
+
+        gettimeofday(&end, 0);
+        totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
+    }
+    printf("Avg time to allocate then immediately deallocate three different 1000 byte pointers:\t%f ms\n", totaltime/50.0);
+     
     detectleaks();
     return EXIT_SUCCESS;
 }
