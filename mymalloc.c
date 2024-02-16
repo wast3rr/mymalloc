@@ -25,7 +25,7 @@ void *mymalloc(size_t size, char *file, int line) {
     // this gets the closest multiple of 8 from size
     int alignedsize = (size+7) & -8;
     
-    if (size > MEMLENGTH * 8) {
+    if (size > MEMLENGTH * 8 - HEADERLENGTH) {
         printf("malloc error: not enough space in heap for desired byte amount (%s:%d)\n", file, line);
         return NULL;
     } 
@@ -48,7 +48,7 @@ void *mymalloc(size_t size, char *file, int line) {
           currsize = currheader[0];
           alloc = currheader[1];
     }
-    
+ 
     // if ptr exceeds heap range, we don't have enough contiguous space
     if (currptr >= (heap+4096)) {
         printf("malloc error: not enough contiguous space in heap for byte amount (%s:%d)\n", file, line);
@@ -136,5 +136,31 @@ void myfree(void *ptr, char *file, int line){
             currheader[0] = currsize + nextheader[0] + HEADERLENGTH;
             nextheader[0] = 0;
         }
+    }
+};
+
+
+
+// detectleaks() can be called by the client at program end to detect any chunks still allocated
+void detectleaks() {
+    char *currptr = heap;
+    int *currheader = (int *) currptr;
+    int currsize = currheader[0];
+
+    if (currheader[0] != 4088) {
+        printf("WARNING: The following memory chunks are still allocated:\n");
+    } else {
+        return;
+    }
+
+    while (currptr < heap+4096) {
+        currsize = currheader[0];
+
+        if (currheader[1] == 1) {
+            printf("Address: %p, Size: %d\n", currptr, currsize);
+        }
+
+        currptr = currptr + currsize + HEADERLENGTH;
+        currheader = (int *) currptr;
     }
 };

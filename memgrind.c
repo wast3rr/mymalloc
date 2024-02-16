@@ -78,7 +78,8 @@ int main(int argc, char **argv) {
         totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
     }
     printf("Avg time to randomly allocate/deallocate a one-byte chunk for 120 allocations: %f ms\n", totaltime/50.0);
-
+   
+    detectleaks();
     return EXIT_SUCCESS;
 }
 
