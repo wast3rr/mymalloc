@@ -8,6 +8,13 @@
 #include "mymalloc.h"
 #endif
 
+double calculatetime(struct timeval start, struct timeval end) {
+    double seconds = end.tv_sec - start.tv_sec;
+    double microseconds = (end.tv_usec - start.tv_usec)/1000000.0;
+
+    return (seconds+microseconds) * 1000.0;
+}
+
 int main(int argc, char **argv) {
     struct timeval start, end;
     double totaltime = 0;
@@ -22,7 +29,7 @@ int main(int argc, char **argv) {
         }
 
         gettimeofday(&end, 0);
-        totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
+        totaltime += calculatetime(start, end);
     }    
     printf("Avg time to allocate and immediately deallocate one byte chunk 120 times:\n%f ms\n", totaltime/50.0);
     
@@ -42,7 +49,7 @@ int main(int argc, char **argv) {
         free(onebytes);
 
         gettimeofday(&end, 0);
-        totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
+        totaltime += calculatetime(start, end);
     }
     printf("Avg time to create and deallocate 120 one-byte chunks:\n%f ms\n", totaltime/50.0);
     
@@ -74,7 +81,7 @@ int main(int argc, char **argv) {
         free(onebytes);
 
         gettimeofday(&end, 0);
-        totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
+        totaltime += calculatetime(start, end);  
     }
     printf("Avg time to randomly allocate/deallocate a one-byte chunk for 120 allocations:\n%f ms\n", totaltime/50.0);
 
@@ -94,7 +101,7 @@ int main(int argc, char **argv) {
         }
 
         gettimeofday(&end, 0);
-        totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
+        totaltime += calculatetime(start, end);   
     }
     printf("Avg time to allocate then immediately deallocate three different 1000 byte pointers 120 times:\n%f ms\n", totaltime/50.0);
     
@@ -129,10 +136,9 @@ int main(int argc, char **argv) {
         }
 
         gettimeofday(&end, 0);
-        totaltime += ((end.tv_sec - start.tv_sec) * 1000.0) + ((end.tv_usec-start.tv_usec) / 1000.0);
+        totaltime += calculatetime(start, end);   
     }
     printf("Avg time to randomly allocate three pointers then deallocate them 120 times:\n%f ms\n", totaltime/50.0);
-   
 
     return EXIT_SUCCESS;
 }

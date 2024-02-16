@@ -93,6 +93,11 @@ int main(int argc, char **argv){
             free(q);
             q = malloc(4080);
             break;
+        // tests that if the user uses an ASCII string as a parameter for malloc(), its converted to an unsigned int 
+        case 11:
+            p = malloc(test);
+            free(p);
+            break;
 
     } 
 

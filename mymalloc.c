@@ -47,7 +47,7 @@ static void printheapstruct() {
     int *currheader = (int *) currptr;
     int i = 0;
 
-    while (currptr < heap+4096) {
+    while (currptr < heap + (MEMLENGTH*8)) {
         printf("Block %d, size: %d, status: %s\n", i, currheader[0], currheader[1] == 1? "allocated" : "unallocated");
         i++;
         currptr = currptr + currheader[0] + HEADERLENGTH;
@@ -79,7 +79,7 @@ void *mymalloc(size_t size, char *file, int line) {
     int alloc = currheader[1];              // allocation status of current header (0 for unallocated, 1 for allocated)
   
     // While current header size is too small or payload is allocated and currptr is still within heap range, proceed to nextptr chunk header
-    while ((currsize < size || alloc == 1) && currptr < heap+4096) {
+    while ((currsize < size || alloc == 1) && currptr < heap + (MEMLENGTH*8)) {
           currptr = currptr + HEADERLENGTH + currsize;
           currheader = (int *) currptr;
           currsize = currheader[0];
@@ -87,7 +87,7 @@ void *mymalloc(size_t size, char *file, int line) {
     }
  
     // if ptr exceeds heap range, we don't have enough contiguous space
-    if (currptr >= (heap+4096)) {
+    if (currptr >= (heap + (MEMLENGTH*8))) {
         printf("malloc error: not enough contiguous space in heap for byte amount (%s:%d)\n", file, line);
         return NULL;
     }
@@ -101,7 +101,7 @@ void *mymalloc(size_t size, char *file, int line) {
     currptr = currptr + HEADERLENGTH + alignedsize;
     currheader = (int *) currptr;
 
-    if (currptr != heap+4096) {
+    if (currptr != heap + (MEMLENGTH*8)) {
         if (currheader[1] == 0) {
             currheader[0] = currsize - HEADERLENGTH - alignedsize;
         }
@@ -124,7 +124,7 @@ void myfree(void *ptr, char *file, int line){
     
     int currsize = currheader[0];           // size of current chunk
     
-    if ((char *) ptr >= heap+4096 || (char *) ptr < heap) {
+    if ((char *) ptr >= heap + (MEMLENGTH*8) || (char *) ptr < heap) {
         printf("free error: address not obtained from malloc() (%s:%d)\n", file, line);
         return;
     }
@@ -142,7 +142,7 @@ void myfree(void *ptr, char *file, int line){
     
     // if the pointer isn't found by the prevptrious loop before pointer gets out of range,
     // we can assume that the pointer is not at the beginning of a chunk
-    if (currptr >= heap+4096) {
+    if (currptr >= heap + (MEMLENGTH*8)) {
         printf("free error: pointer provided not at beginning of a block (%s:%d)\n", file, line);
         return;
     }

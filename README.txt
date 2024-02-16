@@ -9,36 +9,29 @@ Richard Li - rl902
 
 
 [ MAJOR DESIGN NOTES ]
-Both mymalloc() and myfree() operate by iterating through the entire static heap
-until finding either a valid chunk to allocate, or the pointer asked the test client requested
-to deallocate. 
+Both mymalloc() and myfree() operate by iterating through the entire static heap until finding either a valid chunk to allocate, or the pointer asked the test client requested to deallocate. 
 
-myfree() additionally coalesces adjacent free chunks. Non-adjacent free chunks are not worried about
-as if myfree() functions properly, any adjacent free chunks will be immediately coalesced.
+myfree() additionally coalesces adjacent free chunks. Non-adjacent free chunks are not worried about as if myfree() functions properly, any adjacent free chunks will be immediately coalesced.
 
-If the test client calls malloc(0), a proper pointer is returned pointing to 0-byte chunk, with
-a fully in-tact header. I chose this rather than just returning null to avoid any errors when deallocating
-the pointer or, more importantly, errors related to the heap being misrepresented as uninitialized.
+If the test client calls malloc(0), a proper pointer is returned pointing to 0-byte chunk, with a fully in-tact header. I chose this rather than just returning null to avoid any errors when deallocating the pointer or, more importantly, errors related to the heap being misrepresented as uninitialized.
 
-Due to the previous design choice, the program will check if malloc() has been previously called by first
-checking if the first byte of the heap is equal to 0. Since the client can call malloc(0), if this is true
-it will also loop through the entire heap using an integer pointer to verify that the heap is truly uninitialized
-and there are no headers later on.
+Due to the previous design choice, the program will check if malloc() has been previously called by first checking if the first byte of the heap is equal to 0. Since the client can call malloc(0), if this is true it will also loop through the entire heap using an integer pointer to verify that the heap is truly uninitialized and there are no headers later on.
 
-If the client attempts to allocate a negative number of bytes, the conversion to size_t will convert it to a 
-very large positive unsigned integer. Therefore, the client will recieve the "not enough heap space" error
-and the program will return NULL.
+If the client attempts to allocate a negative number of bytes, the conversion to size_t will convert it to a  very large positive unsigned integer. Therefore, the client will recieve the "not enough heap space" error and the program will return NULL.
+
+If the client uses an ASCII string (NOT IN QUOTES) as a parameter for malloc(), it will be converted to the corresponding unsigned int and used as any other parameter would in malloc().
 
 
 
 [ TEST PROGRAMS ]
 memgrind.c - there are five stress tests in memgrind.c, none of which focus on correctness checking but rather performance checking
+make
 
-memtest.c - this test program ensures that bytes allocated by the client are not overwritten with new calls to malloc, and also
-checks that the full heap could be properly allocated (64 objects * (56  payload size + 8 header size) = 4096 bytes)
+memtest.c - this test program ensures that bytes allocated by the client are not overwritten with new calls to malloc, and also checks that the full heap could be properly allocated (64 objects * (56  payload size + 8 header size) = 4096 bytes)
+make memtest
 
-testclient.c - this test program utilizes a switch case to take several different command line arguments (integers) to test
-the errors of the library, edge cases, and general correctness of the library
+testclient.c - this test program utilizes a switch case to take several different command line arguments (integers) to test the errors of the library, edge cases, and general correctness of the library
+make testclient
 
 
 
@@ -48,43 +41,30 @@ For every stress test, the average time of 50 trials are returned in ms.
 
 Stress test 1: allocates then immediately deallocates one byte 120 times
 
-Stress test 2: allocated a 120 byte array, then allocates 120 one-byte objects
-into said array, then deallocated the objects of the array and the array itself.
+Stress test 2: allocated a 120 byte array, then allocates 120 one-byte objects into said array, then deallocated the objects of the array and the array itself.
 
-Stress test 3: randomly allocates or deallocates one-byte objects in an allocated
-120 byte array. Objects are only deallocated if there currently exists an object
-in the array. At the end, all remaining objects of the array are freed followed
-by the array itself
+Stress test 3: randomly allocates or deallocates one-byte objects in an allocated 120 byte array. Objects are only deallocated if there currently exists an object in the array. At the end, all remaining objects of the array are freed followed by the array itself
 
 OUR STRESS TESTS:
 
-Stress test 4: allocated 1000 bytes to three pointers then deallocates the three
-pointers (starting from the first one allocated) 120 times.
+Stress test 4: allocated 1000 bytes to three pointers then deallocates the three pointers (starting from the first one allocated) 120 times.
 
-Stress test 5: allocates 1000 bytes to three different pointers in random order,
-then deallocates the three pointers 120 times.
+Stress test 5: allocates 1000 bytes to three different pointers in random order, then deallocates the three pointers 120 times.
 
 
 
 [ CORRECTNESS TESTS ]
-I've separated testing of the library into three separate categories: general 
-correctness, errors, and edge cases.
+I've separated testing of the library into three separate categories: general correctness, errors, and edge cases.
 
 
 GENERAL CORRECTNESS
-General correctness is handled by both memtest.c and testclient.c.
-As stated previously, memtest.c ensures that client data is not overwritten by separate mallocs
-and that the full heap can be successfully allocated.
+General correctness is handled by both memtest.c and testclient.c. As stated previously, memtest.c ensures that client data is not overwritten by separate mallocs and that the full heap can be successfully allocated.
 
-testclient.c cases 6 through 8 handle general correctness testing.
-CASE 6 tests that client data is never corrupted, even after malloc and free fail and both functions are called several times.
-It accomplishes this by first allocating the integers 1 and 2 to a 8 byte payload, then calling malloc and free on the same pointer 
-50 times and purposely failing malloc and free once. Afterwards, the integers 1 and 2 should still be at their original pointers.
+testclient.c cases 6 through 8 handle general correctness testing. CASE 6 tests that client data is never corrupted, even after malloc and free fail and both functions are called several times. It accomplishes this by first allocating the integers 1 and 2 to a 8 byte payload, then calling malloc and free on the same pointer  50 times and purposely failing malloc and free once. Afterwards, the integers 1 and 2 should still be at their original pointers.
 
 CASE 7 is a very basic test of both malloc and free. It calls malloc on two separate pointers then free on the same pointers.
 
-CASE 8 tests that if a block is deallocated, it can still be reallocated properly even if it is surrounded by two
-allocated blocks. It does this by allocating three different sized pointers, freeing the middle one, then re-allocating it.
+CASE 8 tests that if a block is deallocated, it can still be reallocated properly even if it is surrounded by two allocated blocks. It does this by allocating three different sized pointers, freeing the middle one, then re-allocating it.
 
 
 ERROR TESTS
@@ -109,3 +89,10 @@ CASE 9 tests to make sure mallocing a negative number prints an error and return
 
 CASE 10 tests to make sure malloc(0) returns a pointer to a 0 byte block which can be properly
 freed and reallocated.
+
+CASE 11 tests that an ASCII string used as a parameter for malloc() will be converted to an unsigned int and the program continues smoothly.
+
+
+
+[ BLACKBOX TESTING ] 
+I also used blackbox testing methods throughout the development of the library. There is a static function in mymalloc.c that prints out the entire structure of the current heap, block by block, including each block's size and allocation status. If -DDEBUG is used as a flag when calling gcc, this function will be printed at the end of every malloc() and free() call. Since it does this for every call, it's only recommended to include the DDEBUG flag when doing small tests which do not involve many calls to the functions.
