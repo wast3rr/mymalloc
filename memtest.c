@@ -20,6 +20,7 @@ int main(int argc, char **argv){
     for (i = 0; i < OBJECTS; i++) {
         obj[i] = malloc(OBJSIZE);
     }
+
     // fill each object with distinct bytes
     for (i = 0; i < OBJECTS; i++) {
         memset(obj[i], i, OBJSIZE);

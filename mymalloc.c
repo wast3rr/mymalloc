@@ -100,12 +100,15 @@ void *mymalloc(size_t size, char *file, int line) {
     // Creates the nextptr header for free chunk to the right of allocated payload, as long as there is free space and not another allocated chunk nextptr to the space
     currptr = currptr + HEADERLENGTH + alignedsize;
     currheader = (int *) currptr;
-    if (currheader[1] == 0) {
-        currheader[0] = currsize - HEADERLENGTH - alignedsize;
-    }
+
+    if (currptr != heap+4096) {
+        if (currheader[1] == 0) {
+            currheader[0] = currsize - HEADERLENGTH - alignedsize;
+        }
     
-    if (DEBUG) { 
-        printheapstruct();
+        if (DEBUG) { 
+            printheapstruct();
+        }
     }
 
     return ptr;
